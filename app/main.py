@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from app.models import Autor, Livro  # adiciona no topo, junto com os outros imports
 
 app = FastAPI()
@@ -7,9 +8,16 @@ app = FastAPI()
 def root():
     return {"mensagem": "API funcionando!"}
 
+livros_db = {
+    1: {"titulo": "Clean Code", "autor": "Robert Martin"},
+    2: {"titulo": "O Cortiço", "autor": "Aluísio Azevedo"},
+}
+
 @app.get("/livros/{livro_id}")
 def buscar_livro(livro_id: int):
-    return {"livro_id": livro_id, "titulo": "Livro de exemplo"}
+    if livro_id not in livros_db:
+        raise HTTPException(status_code=404, detail="Livro não encontrado")
+    return livros_db[livro_id]
 
 @app.get("/livros")
 def listar_livros(autor: str = None, pagina: int = 1):
