@@ -1,6 +1,6 @@
-from fastapi import FastAPI
 from fastapi import FastAPI, HTTPException
-from app.models import Autor, Livro  # adiciona no topo, junto com os outros imports
+from app.models import Autor, Livro
+from app.database import get_connection
 
 app = FastAPI()
 
@@ -8,20 +8,34 @@ app = FastAPI()
 def root():
     return {"mensagem": "API funcionando!"}
 
-livros_db = {
-    1: {"titulo": "Clean Code", "autor": "Robert Martin"},
-    2: {"titulo": "O Cortiço", "autor": "Aluísio Azevedo"},
-}
-
 @app.get("/livros/{livro_id}")
 def buscar_livro(livro_id: int):
-    if livro_id not in livros_db:
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM livros WHERE id = ?", (livro_id,))
+    livro = cursor.fetchone()
+    conn.close()
+
+    if livro is None:
         raise HTTPException(status_code=404, detail="Livro não encontrado")
-    return livros_db[livro_id]
+
+    return dict(livro)
 
 @app.get("/livros")
-def listar_livros(autor: str = None, pagina: int = 1):
-    return {"autor": autor, "pagina": pagina}
+def listar_livros(autor: str = None):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    if autor:
+        cursor.execute("SELECT * FROM livros WHERE autor = ?", (autor,))
+    else:
+        cursor.execute("SELECT * FROM livros")
+
+    livros = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+
+    return livros
 
 @app.post("/livros", status_code=201)
 def criar_livro(livro: Livro):
