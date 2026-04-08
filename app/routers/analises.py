@@ -20,3 +20,19 @@ def resumo_livros():
     }
 
     return resumo
+
+@router.get("/analises/disponibilidade")
+def disponibilidade_livros():
+    conn = get_connection()
+    df = pd.read_sql_query("SELECT * FROM livros", conn)
+    conn.close()
+
+    total = int(df.shape[0])
+    disponiveis = int(df["disponivel"].sum())
+    porcentagem = round((disponiveis / total) * 100, 1) if total > 0 else 0
+
+    return {
+        "total": total,
+        "disponiveis": disponiveis,
+        "porcentagem_disponivel": porcentagem
+    }
