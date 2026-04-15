@@ -1,6 +1,6 @@
 # Revisão FastAPI — Fase 3
 
-API REST construída com FastAPI durante a revisão da Fase 3 do plano de estudos backend Python.
+API REST construída com FastAPI durante estudos sobre backend com Python.
 
 Conecta a um banco SQLite, processa dados com Pandas e valida entradas com Pydantic.
 
